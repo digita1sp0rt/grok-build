@@ -229,14 +229,25 @@ impl<'a> EntryRenderer<'a> {
                 );
                 self.theme.accent_error
             } else if vg.running {
-                let brightness = theme::wave_brightness(
-                    self.tick,
-                    self.skip_rows,
-                    self.appearance.animation.wave_rows,
-                    WAVE_SPEED,
-                );
-                let color = blend_color(bg, self.theme.accent_tool, brightness)
-                    .unwrap_or(self.theme.accent_tool);
+                let color = if theme::wants_glitch_accents() {
+                    theme::glitch_accent_color(
+                        self.tick,
+                        self.skip_rows,
+                        self.appearance.animation.wave_rows,
+                        WAVE_SPEED,
+                        bg,
+                        self.theme.accent_running,
+                    )
+                } else {
+                    let brightness = theme::wave_brightness(
+                        self.tick,
+                        self.skip_rows,
+                        self.appearance.animation.wave_rows,
+                        WAVE_SPEED,
+                    );
+                    blend_color(bg, self.theme.accent_tool, brightness)
+                        .unwrap_or(self.theme.accent_tool)
+                };
                 buf.set_string_safe(
                     accent_area.x,
                     accent_area.y,
@@ -811,16 +822,28 @@ impl Renderable for EntryRenderer<'_> {
                     buf.set_string_safe(accent_area.x, y, crate::glyphs::accent_bar(), style);
                 }
             } else if accent_style.animated {
-                // Animated accents: wave effect (running blocks)
+                // Animated accents: wave (default) or glitch (Hacker Japan)
                 let bg = bg_color.unwrap_or(self.fallback_bg());
                 let wave_rows = self.appearance.animation.wave_rows;
+                let glitch = theme::wants_glitch_accents();
 
                 for row in 0..accent_area.height {
                     let y = accent_area.y + row;
                     let logical_row = skip_rows + row;
-                    let brightness =
-                        theme::wave_brightness(self.tick, logical_row, wave_rows, WAVE_SPEED);
-                    let animated_color = blend_color(bg, color, brightness).unwrap_or(color);
+                    let animated_color = if glitch {
+                        theme::glitch_accent_color(
+                            self.tick,
+                            logical_row,
+                            wave_rows,
+                            WAVE_SPEED,
+                            bg,
+                            color,
+                        )
+                    } else {
+                        let brightness =
+                            theme::wave_brightness(self.tick, logical_row, wave_rows, WAVE_SPEED);
+                        blend_color(bg, color, brightness).unwrap_or(color)
+                    };
                     let style = Style::default().fg(animated_color);
                     buf.set_string_safe(accent_area.x, y, crate::glyphs::accent_bar(), style);
                 }
@@ -984,12 +1007,23 @@ impl Renderable for EntryRenderer<'_> {
                 }
             } else if let Some(style) = bullet_style {
                 if style.animated {
-                    // Animated bullet: wave effect synced with accent
+                    // Animated bullet: wave (or glitch) synced with accent
                     let bg = bg_color.unwrap_or(self.fallback_bg());
                     let wave_rows = self.appearance.animation.wave_rows;
-                    let brightness = theme::wave_brightness(self.tick, 0, wave_rows, WAVE_SPEED);
-                    let animated_color =
-                        blend_color(bg, style.color, brightness).unwrap_or(style.color);
+                    let animated_color = if theme::wants_glitch_accents() {
+                        theme::glitch_accent_color(
+                            self.tick,
+                            0,
+                            wave_rows,
+                            WAVE_SPEED,
+                            bg,
+                            style.color,
+                        )
+                    } else {
+                        let brightness =
+                            theme::wave_brightness(self.tick, 0, wave_rows, WAVE_SPEED);
+                        blend_color(bg, style.color, brightness).unwrap_or(style.color)
+                    };
                     if let Some(cell) = buf.cell_mut((content_area.x, bullet_y)) {
                         cell.fg = animated_color;
                     }

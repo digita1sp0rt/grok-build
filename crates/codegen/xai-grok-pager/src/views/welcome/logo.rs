@@ -117,13 +117,17 @@ fn render_into(area: Rect, buf: &mut Buffer, theme: &Theme, logo: &str) {
         .unwrap_or(1)
         .max(1) as f32;
     let secs = anim_phase_secs();
+    let glitch = crate::theme::wants_glitch_accents();
 
     // Blend each glyph from the resting gray toward the bright text color by its
     // shine opacity, so a sheen sweeps across the braille art. Adjacent glyphs
     // that land on the same blended color share one Span to hold down the
-    // per-frame allocation.
+    // per-frame allocation. Hacker Japan also chromatic-shifts neon spikes.
     let base = theme.gray;
     let hilite = theme.text_primary;
+    let neon_a = theme.accent_user; // matrix green
+    let neon_b = theme.accent_assistant; // magenta
+    let neon_c = theme.running; // cyan
     let logo_lines: Vec<Line> = lines
         .iter()
         .enumerate()
@@ -135,7 +139,25 @@ fn render_into(area: Rect, buf: &mut Buffer, theme: &Theme, logo: &str) {
                 // Sweep along the bottom-left → top-right diagonal: the
                 // coordinate grows as col increases and row decreases.
                 let diag = (col as f32 + (rows - 1.0 - row as f32)) / (cols + rows);
-                let color = blend_color(base, hilite, shine_opacity(diag, secs)).unwrap_or(base);
+                let opacity = shine_opacity(diag, secs);
+                let mut color = blend_color(base, hilite, opacity).unwrap_or(base);
+                if glitch {
+                    // Deterministic neon channel tear — chromatic aberration vibe.
+                    let h = (row as u64)
+                        .wrapping_mul(0x9E37_79B9)
+                        .wrapping_add(col as u64 * 0x85EB_CA6B)
+                        .wrapping_add((secs * 60.0) as u64);
+                    if (h & 0xFF) > 0xE8 {
+                        color = match h % 3 {
+                            0 => neon_a,
+                            1 => neon_b,
+                            _ => neon_c,
+                        };
+                    } else if opacity > 0.2 {
+                        // Peak of the shimmer band lands on matrix green.
+                        color = blend_color(base, neon_a, opacity).unwrap_or(neon_a);
+                    }
+                }
                 if run_color != Some(color) {
                     if let Some(prev) = run_color {
                         spans.push(Span::styled(

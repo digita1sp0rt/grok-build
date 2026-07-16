@@ -15,6 +15,7 @@ Grok includes five built-in themes, plus an `auto` option that follows your syst
 | **TokyoNight** | `tokyonight`, `tokyo-night`, `tokyo` | Dark, blue-tinted backgrounds from the Tokyo Night palette. Loses its character when quantized. | Yes |
 | **RosePineMoon** | `rosepine`, `rose-pine`, `rosepine-moon`, `rose-pine-moon` | Muted dark palette with mauve accents, from the Rosé Pine family. | Yes |
 | **OscuraMidnight** | `oscura`, `oscura-midnight` | Deep dark base with purple accents. | Yes |
+| **HackerJapan** | `hacker-japan`, `hackerjapan`, `neo-tokyo`, `matrix`, `cyber` | Neon cyber / ネオ東京 CLI: matrix green, magenta, cyan. Glitch accent animation on running tools + logo chromatic tear. | Yes |
 
 Theme names are case-insensitive. The `auto` option (alias `system`) is documented under [Auto Theme (System Appearance)](#auto-theme-system-appearance).
 
@@ -108,7 +109,15 @@ Every theme is defined using full RGB values. At startup, Grok quantizes all col
 - On **256-color** terminals, each RGB value is mapped to the nearest indexed palette entry.
 - On **16-color** terminals, colors map to ANSI names.
 
-GrokNight and GrokDay use neutral grays that quantize cleanly. TokyoNight, RosePineMoon, and OscuraMidnight use distinctive tinted backgrounds that lose their character when quantized, which is why the theme picker hides them on non-truecolor terminals.
+GrokNight and GrokDay use neutral grays that quantize cleanly. TokyoNight, RosePineMoon, OscuraMidnight, and HackerJapan use distinctive tinted backgrounds that lose their character when quantized, which is why the theme picker hides them on non-truecolor terminals.
+
+### Hacker Japan (glitch + CLI)
+
+When `theme = "hacker-japan"` is active:
+
+- Running tool/shell accent bars use a **glitch** animation (chromatic RGB tear) instead of the smooth wave.
+- The welcome logo shimmer adds occasional neon green / magenta / cyan spikes.
+- Pair with `~/.grok/pager.toml` shell-style blocks (`header_style = "shell"`, triangle bullets, faster `wave_rows`) for a denser CLI look.
 
 ### Runtime-Generated Colors
 

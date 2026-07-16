@@ -14,6 +14,7 @@ pub mod cache;
 pub mod color_support;
 mod grokday;
 mod groknight;
+mod hackerjapan;
 pub mod md_style;
 pub mod osc11;
 mod oscura;
@@ -23,6 +24,7 @@ mod terminal_default;
 pub mod tokyonight;
 
 pub use color_support::quantize;
+pub use hackerjapan::{glitch_accent_color, wants_glitch_accents};
 pub use tokyonight::{Theme, pulse_brightness, wave_brightness};
 
 /// Available theme variants.
@@ -33,6 +35,8 @@ pub enum ThemeKind {
     TokyoNight = 2,
     RosePineMoon = 3,
     OscuraMidnight = 5,
+    /// Neon cyber / ネオ東京 CLI aesthetic. Truecolor required.
+    HackerJapan = 6,
     /// Meta-variant: follow system dark/light appearance.
     ///
     /// Never stored in `cache::CURRENT` — resolved to a concrete
@@ -51,6 +55,7 @@ impl ThemeKind {
         ThemeKind::TokyoNight,
         ThemeKind::RosePineMoon,
         ThemeKind::OscuraMidnight,
+        ThemeKind::HackerJapan,
     ];
 
     /// Theme kinds available on the current terminal.
@@ -78,6 +83,7 @@ impl ThemeKind {
             Self::GrokDay => "grokday",
             Self::RosePineMoon => "rosepine-moon",
             Self::OscuraMidnight => "oscura-midnight",
+            Self::HackerJapan => "hacker-japan",
             Self::Auto => "auto",
         }
     }
@@ -94,6 +100,7 @@ impl ThemeKind {
             Self::GrokDay => false,
             Self::RosePineMoon => true,
             Self::OscuraMidnight => true,
+            Self::HackerJapan => true,
             // Auto is resolved to a concrete theme before rendering.
             Self::Auto => false,
         }
@@ -112,6 +119,8 @@ impl ThemeKind {
                 Some(Self::RosePineMoon)
             }
             "oscura" | "oscura-midnight" => Some(Self::OscuraMidnight),
+            "hacker-japan" | "hackerjapan" | "hacker_japan" | "neo-tokyo" | "neotokyo"
+            | "cyber" | "matrix" => Some(Self::HackerJapan),
             _ => None,
         }
     }
@@ -147,6 +156,8 @@ pub fn display_name_for_canonical(value: &str) -> &str {
         "grokday" => "Grok Day",
         "tokyonight" => "Tokyo Night",
         "rosepine-moon" => "Rose Pine Moon",
+        "oscura-midnight" => "Oscura Midnight",
+        "hacker-japan" => "Hacker Japan",
         other => other,
     }
 }
@@ -275,6 +286,7 @@ impl Theme {
             ThemeKind::GrokDay => Self::grokday(),
             ThemeKind::RosePineMoon => Self::rosepine_moon(),
             ThemeKind::OscuraMidnight => Self::oscura_midnight(),
+            ThemeKind::HackerJapan => Self::hacker_japan(),
             // Auto is resolved to a concrete theme before being stored;
             // if reached, fall back to GrokNight.
             ThemeKind::Auto => Self::groknight(),
@@ -684,6 +696,7 @@ mod tests {
         assert!(!ThemeKind::TokyoNight.is_auto());
         assert!(!ThemeKind::RosePineMoon.is_auto());
         assert!(!ThemeKind::OscuraMidnight.is_auto());
+        assert!(!ThemeKind::HackerJapan.is_auto());
     }
 
     #[test]
@@ -703,6 +716,7 @@ mod tests {
         assert!(Theme::tokyonight().is_dark());
         assert!(Theme::rosepine_moon().is_dark());
         assert!(Theme::oscura_midnight().is_dark());
+        assert!(Theme::hacker_japan().is_dark());
         assert!(!Theme::grokday().is_dark());
     }
 
@@ -985,6 +999,7 @@ mod tests {
                 ThemeKind::TokyoNight => Theme::tokyonight(),
                 ThemeKind::RosePineMoon => Theme::rosepine_moon(),
                 ThemeKind::OscuraMidnight => Theme::oscura_midnight(),
+                ThemeKind::HackerJapan => Theme::hacker_japan(),
                 ThemeKind::Auto => unreachable!("ALL excludes Auto"),
             };
             let track = lum(theme.scrollbar_bg, "scrollbar_bg", kind);
@@ -1132,6 +1147,18 @@ mod tests {
         assert_eq!(
             ThemeKind::from_name("oscura-midnight"),
             Some(ThemeKind::OscuraMidnight)
+        );
+        assert_eq!(
+            ThemeKind::from_name("hacker-japan"),
+            Some(ThemeKind::HackerJapan)
+        );
+        assert_eq!(
+            ThemeKind::from_name("neo-tokyo"),
+            Some(ThemeKind::HackerJapan)
+        );
+        assert_eq!(
+            ThemeKind::from_name("matrix"),
+            Some(ThemeKind::HackerJapan)
         );
     }
 

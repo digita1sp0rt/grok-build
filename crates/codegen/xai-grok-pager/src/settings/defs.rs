@@ -70,6 +70,11 @@ const THEME_CHOICES: &[EnumChoice] = &[
         display: "Oscura Midnight",
         description: "Deep dark with warm accents; needs truecolor.",
     },
+    EnumChoice {
+        canonical: "hacker-japan",
+        display: "Hacker Japan",
+        description: "Neon cyber / matrix CLI; glitch accents; needs truecolor.",
+    },
 ];
 
 // ---------------------------------------------------------------------------
@@ -498,6 +503,11 @@ const CONCRETE_THEME_CHOICES: &[EnumChoice] = &[
         canonical: "oscura-midnight",
         display: "Oscura Midnight",
         description: "Deep dark with warm accents; needs truecolor.",
+    },
+    EnumChoice {
+        canonical: "hacker-japan",
+        display: "Hacker Japan",
+        description: "Neon cyber / matrix CLI; glitch accents; needs truecolor.",
     },
 ];
 
